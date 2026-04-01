@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PronounceRight — Vocabulary & Pronunciation Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --saffron:#e8720c;--teal:#0f6e56;--red:#a32d2d;--green:#3b6d11;
+  --ink:#1a1a2e;--ink2:#4a4a6a;--paper:#faf9f6;
+  --card:#ffffff;--border:#e0ddd6;--surface:#f3f1ec;
+}
+body{background:var(--paper);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;padding:0;margin:0}
+
+/* HEADER */
+.header{background:#fff;border-bottom:0.5px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.brand{font-family:'Playfair Display',serif;font-size:20px;color:var(--saffron)}
+.brand-sub{font-size:11px;color:var(--ink2);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
+.header-right{display:flex;gap:10px;align-items:center}
+.btn-hint{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-hint:hover{background:var(--border)}
+
+/* SCORE BAR */
+.score-bar{background:#fff;border-bottom:0.5px solid var(--border);padding:10px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.score-pill{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-correct{background:#639922}
+.dot-wrong{background:#a32d2d}
+.dot-partial{background:#BA7517}
+.score-val{font-size:15px;font-weight:700}
+.score-label{color:var(--ink2);font-weight:400}
+.score-divider{width:0.5px;height:24px;background:var(--border)}
+.score-pct{font-size:13px;color:var(--ink2)}
+.score-pct span{font-weight:700;color:var(--ink);font-size:15px}
+.btn-reset{margin-left:auto;background:none;border:0.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-reset:hover{background:var(--surface)}
+
+/* CATEGORY FILTER */
+.filter-bar{padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:0.5px solid var(--border);background:#fff}
+.filter-btn{border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:500;background:var(--surface);color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.filter-btn.active{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+
+/* MAIN */
+.main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+
+/* PROGRESS */
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.prog-row strong{color:var(--ink)}
+.prog-bar-wrap{height:4px;background:var(--border);border-radius:4px;margin-bottom:20px;overflow:hidden}
+.prog-bar-fill{height:4px;background:var(--saffron);border-radius:4px;transition:width .4s ease}
+
+/* CARD */
+.word-card{background:var(--card);border:0.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:14px;position:relative}
+.cat-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.cat-general{background:#faeeda;color:#633806}
+.cat-business{background:#e1f5ee;color:#085041}
+.cat-gd{background:#eeedfe;color:#26215c}
+.word-main{font-family:'Playfair Display',serif;font-size:40px;color:var(--ink);line-height:1.1;margin-bottom:8px;word-break:break-word}
+.phonetic{font-size:17px;color:var(--saffron);font-weight:500;margin-bottom:4px;letter-spacing:.02em}
+.sounds-like{font-size:13px;color:var(--ink2);margin-bottom:4px}
+.tip{font-size:12px;color:var(--teal);font-weight:500;margin-bottom:0}
+.divider{height:0.5px;background:var(--border);margin:16px 0}
+.meaning-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.meaning-text{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:10px}
+.example-text{font-size:13px;color:var(--ink2);font-style:italic;line-height:1.55;padding:8px 14px;border-left:2px solid var(--border);border-radius:0 8px 8px 0;background:var(--surface)}
+
+/* FEEDBACK */
+.feedback-box{border-radius:12px;padding:13px 16px;font-size:14px;font-weight:500;display:none;align-items:center;gap:10px;margin-bottom:10px}
+.feedback-box.show{display:flex}
+.feedback-box.correct{background:#eaf3de;color:#27500a;border:0.5px solid #97c459}
+.feedback-box.wrong{background:#fcebeb;color:#501313;border:0.5px solid #f09595}
+.feedback-box.partial{background:#faeeda;color:#412402;border:0.5px solid #EF9F27}
+.heard-line{font-size:12px;color:var(--ink2);text-align:center;margin-bottom:8px;display:none}
+.heard-line span{font-weight:600;color:var(--ink)}
+
+/* MIC */
+.mic-section{background:var(--card);border:0.5px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:14px}
+.mic-btn{width:68px;height:68px;border-radius:50%;border:none;background:var(--saffron);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.mic-btn:hover{transform:scale(1.06)}
+.mic-btn.listening{background:var(--red);animation:pulse 1s infinite}
+.mic-btn.disabled{background:#ccc;cursor:not-allowed}
+.mic-btn svg{width:28px;height:28px;fill:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(163,45,45,.35)}50%{box-shadow:0 0 0 12px rgba(163,45,45,0)}}
+.mic-label{font-size:13px;color:var(--ink2);font-weight:500;text-align:center}
+.no-support-msg{background:#fcebeb;color:#501313;border:0.5px solid #f09595;border-radius:10px;padding:12px 16px;font-size:13px;display:none;margin-bottom:10px;line-height:1.5}
+
+/* CONTROLS */
+.controls{display:flex;gap:8px;align-items:center}
+.btn-nav{background:#fff;border:0.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.btn-nav:hover{background:var(--surface)}
+.btn-nav:disabled{opacity:.35;cursor:not-allowed}
+.btn-shuffle{background:#fff;border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-shuffle:hover{background:var(--surface)}
+.spacer{flex:1}
+
+/* HINDI MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 24px;position:relative}
+.modal-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--saffron);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--ink2);margin-bottom:20px;line-height:1.5}
+.instr-block{margin-bottom:18px}
+.instr-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.step-num{width:26px;height:26px;background:var(--saffron);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-text{font-size:14px;line-height:1.6;color:var(--ink)}
+.step-text b{font-weight:500}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink2)}
+.modal-close:hover{background:var(--border)}
+.legend{background:var(--surface);border-radius:10px;padding:14px 16px;margin-top:16px}
+.legend-title{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px}
+.legend-row{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:7px}
+.legend-icon{font-size:15px;width:22px;text-align:center}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="brand">PronounceRight</div>
+    <div class="brand-sub">Vocabulary &amp; Pronunciation Trainer</div>
+  </div>
+  <div class="header-right">
+    <button class="btn-hint" onclick="toggleModal()">📖 कैसे उपयोग करें</button>
+  </div>
+</div>
+
+<!-- SCORE BAR -->
+<div class="score-bar">
+  <div class="score-pill"><div class="dot dot-correct"></div><span class="score-val" id="sc-correct">0</span> <span class="score-label">Correct</span></div>
+  <div class="score-divider"></div>
+  <div class="score-pill"><div class="dot dot-partial"></div><span class="score-val" id="sc-partial">0</span> <span class="score-label">Almost</span></div>
+  <div class="score-divider"></div>
+  <div class="score-pill"><div class="dot dot-wrong"></div><span class="score-val" id="sc-wrong">0</span> <span class="score-label">Wrong</span></div>
+  <div class="score-divider"></div>
+  <div class="score-pct">Accuracy: <span id="sc-pct">—</span></div>
+  <button class="btn-reset" onclick="resetScore()">↺ Reset Score</button>
+</div>
+
+<!-- CATEGORY FILTER -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All Words</button>
+  <button class="filter-btn" onclick="setFilter('general',this)">Common Words</button>
+  <button class="filter-btn" onclick="setFilter('business',this)">Business English</button>
+  <button class="filter-btn" onclick="setFilter('gd',this)">GD / Interview</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="prog-row">
+    <span>Word <strong id="cur">1</strong> of <strong id="total">40</strong></span>
+    <span id="cat-label" style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:var(--saffron)">All</span>
+  </div>
+  <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-fill" style="width:2.5%"></div></div>
+
+  <div id="no-support-msg" class="no-support-msg">
+    ⚠️ आपका ब्राउज़र माइक्रोफोन सपोर्ट नहीं करता। कृपया <strong>Google Chrome</strong> में खोलें।<br>
+    <span style="color:#a32d2d">Your browser does not support speech input. Please open this file in Google Chrome.</span>
+  </div>
+
+  <!-- WORD CARD -->
+  <div class="word-card">
+    <div id="cat-tag" class="cat-tag cat-general">noun</div>
+    <div id="word-main" class="word-main">Colonel</div>
+    <div id="phonetic" class="phonetic">KER-nel</div>
+    <div id="sounds-like" class="sounds-like">Sounds like: "kernel"</div>
+    <div id="tip" class="tip"></div>
+    <div class="divider"></div>
+    <div class="meaning-label">Meaning</div>
+    <div id="meaning" class="meaning-text">A high-ranking military officer.</div>
+    <div id="example" class="example-text">"The colonel addressed the troops."</div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="feedback-box" id="feedback">
+    <span id="fb-icon"></span>
+    <span id="fb-msg"></span>
+  </div>
+  <div class="heard-line" id="heard-line">I heard: <span id="heard-word">—</span></div>
+
+  <!-- MIC -->
+  <div class="mic-section">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-6.5 10H7a5 5 0 0 0 10 0h1.5A6.5 6.5 0 0 1 12.5 17.9V20h2v1.5h-5V20h2v-2.1A6.5 6.5 0 0 1 5.5 11z"/>
+      </svg>
+    </button>
+    <div class="mic-label" id="micLabel">माइक दबाएं और शब्द बोलें &nbsp;|&nbsp; Tap mic and say the word</div>
+  </div>
+
+  <!-- NAV CONTROLS -->
+  <div class="controls">
+    <button class="btn-nav" id="prevBtn" onclick="goTo(idx-1)" disabled>← Prev</button>
+    <button class="btn-shuffle" onclick="doShuffle()" title="Shuffle deck">⇄ Shuffle</button>
+    <div class="spacer"></div>
+    <button class="btn-nav" id="nextBtn" onclick="goTo(idx+1)">Next →</button>
+  </div>
+</div>
+
+<!-- HINDI INSTRUCTIONS MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="toggleModal()">✕ बंद करें</button>
+    <div class="modal-title">कैसे उपयोग करें</div>
+    <div class="modal-sub">How to use PronounceRight — Instructions in Hindi &amp; English</div>
+
+    <div class="instr-block">
+      <div class="instr-step">
+        <div class="step-num">1</div>
+        <div class="step-text"><b>शब्द पढ़ें</b> — स्क्रीन पर दिखाए गए शब्द को ध्यान से देखें। नीचे उसकी <b>Phonetic Guide</b> (उच्चारण गाइड) दी गई है — पहले उसे पढ़ें।<br><span style="color:#4a4a6a;font-size:12px">Read the word on screen. Study the phonetic guide below it before speaking.</span></div>
+      </div>
+      <div class="instr-step">
+        <div class="step-num">2</div>
+        <div class="step-text"><b>माइक बटन दबाएं</b> — नारंगी माइक बटन दबाएं। जब वह लाल हो जाए, तब शब्द बोलें।<br><span style="color:#4a4a6a;font-size:12px">Tap the orange mic button. When it turns red, say the word clearly.</span></div>
+      </div>
+      <div class="instr-step">
+        <div class="step-num">3</div>
+        <div class="step-text"><b>Feedback देखें</b> — App आपको बताएगा कि उच्चारण सही था या नहीं।<br><span style="color:#4a4a6a;font-size:12px">The app will tell you if your pronunciation was correct, almost correct, or wrong.</span></div>
+      </div>
+      <div class="instr-step">
+        <div class="step-num">4</div>
+        <div class="step-text"><b>अर्थ पढ़ें</b> — शब्द का मतलब और उदाहरण वाक्य नीचे दिया गया है। इसे याद करें।<br><span style="color:#4a4a6a;font-size:12px">Read the meaning and example sentence on the card. Try to use it in a sentence.</span></div>
+      </div>
+      <div class="instr-step">
+        <div class="step-num">5</div>
+        <div class="step-text"><b>Filter का उपयोग करें</b> — ऊपर दिए गए बटनों से Category चुनें: Common Words, Business English, या GD/Interview।<br><span style="color:#4a4a6a;font-size:12px">Use the filter buttons at the top to practice specific categories.</span></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-title">Feedback का अर्थ / What feedback means</div>
+      <div class="legend-row"><div class="legend-icon">✓</div><div><b style="color:#3b6d11">Correct</b> — उच्चारण बिल्कुल सही है। शाबाश!</div></div>
+      <div class="legend-row"><div class="legend-icon">~</div><div><b style="color:#854F0B">Almost</b> — करीब-करीब सही है। एक बार और कोशिश करें।</div></div>
+      <div class="legend-row"><div class="legend-icon">✗</div><div><b style="color:#a32d2d">Wrong</b> — फिर से Phonetic Guide देखें और दोबारा बोलें।</div></div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px 16px;background:#e1f5ee;border-radius:10px;font-size:13px;color:#085041;line-height:1.6">
+      💡 <b>सुझाव:</b> Google Chrome में खोलें। माइक की permission दें। शांत जगह पर practice करें।<br>
+      <span style="color:#0f6e56">Tip: Open in Google Chrome. Allow microphone permission. Practice in a quiet place.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const words=[
+  // COMMON / GENERAL
+  {word:"Colonel",pos:"noun",cat:"general",phonetic:"KER-nel",sounds_like:'Sounds like: "kernel"',tip:"The L is completely silent.",meaning:"A high-ranking military officer, above a lieutenant colonel and below a brigadier.",example:'"The colonel addressed the troops before the mission."'},
+  {word:"Subtle",pos:"adjective",cat:"general",phonetic:"SUT-ul",sounds_like:'Sounds like: "suttle"',tip:"The B is completely silent.",meaning:"So fine or delicate as to be difficult to detect. Not obvious.",example:'"There was a subtle difference between the two designs."'},
+  {word:"Debt",pos:"noun",cat:"general",phonetic:"DET",sounds_like:'Sounds like: "det"',tip:"The B is silent. Never say 'deb-t'.",meaning:"Money that is owed or due to someone.",example:'"She worked hard to pay off her student debt."'},
+  {word:"Epitome",pos:"noun",cat:"general",phonetic:"ih-PIT-oh-mee",sounds_like:'4 syllables: ih-PIT-oh-mee',tip:"Does NOT rhyme with 'gnome'. Say all 4 syllables.",meaning:"A perfect example or embodiment of something.",example:'"She is the epitome of professionalism."'},
+  {word:"Hyperbole",pos:"noun",cat:"general",phonetic:"hy-PER-buh-lee",sounds_like:'4 syllables: hy-PER-buh-lee',tip:"Does NOT end in 'bowl'. Say hy-PER-buh-lee.",meaning:"Exaggerated statements not meant to be taken literally.",example:'"Saying I have a million things to do is hyperbole."'},
+  {word:"Phenomenon",pos:"noun",cat:"general",phonetic:"fih-NOM-ih-non",sounds_like:'fih-NOM-ih-non — stress on NOM',tip:"Plural is 'phenomena', not 'phenomenons'.",meaning:"A remarkable or outstanding fact, event, or circumstance.",example:'"The northern lights are a breathtaking natural phenomenon."'},
+  {word:"Genre",pos:"noun",cat:"general",phonetic:"ZHON-ruh",sounds_like:'Starts with a soft Zh sound',tip:"Never say 'GEN-ray'. The G is like the s in 'measure'.",meaning:"A category or type of artistic work — such as fiction, drama, or comedy.",example:'"Her favourite genre of music is jazz."'},
+  {word:"Cache",pos:"noun",cat:"general",phonetic:"KASH",sounds_like:'Sounds exactly like "cash"',tip:"Never say 'ka-SHAY'. That's a different word.",meaning:"A hidden store of things. Also: temporary computer memory for quick access.",example:'"Clear the browser\'s cache if the page won\'t load."'},
+  {word:"Naive",pos:"adjective",cat:"general",phonetic:"nah-EEV",sounds_like:'2 syllables: nah-EEV',tip:"Stress is on the second syllable — EEV.",meaning:"Showing a lack of experience or judgement; innocent.",example:'"It was naive to trust a stranger with that information."'},
+  {word:"Facade",pos:"noun",cat:"general",phonetic:"fuh-SAHD",sounds_like:'fuh-SAHD — stress on SAHD',tip:"The C has a soft S sound (cedilla: ç). Not 'FAY-kade'.",meaning:"The front of a building. Also: an outward appearance that is false.",example:'"Her cheerful facade hid a deep sadness."'},
+  {word:"Wednesday",pos:"noun",cat:"general",phonetic:"WENZ-day",sounds_like:'WENZ-day — middle D is silent',tip:"In speech, we skip the first D. Not 'Wed-nes-day'.",meaning:"The day of the week between Tuesday and Thursday.",example:'"The meeting is scheduled for Wednesday morning."'},
+  {word:"Psychology",pos:"noun",cat:"general",phonetic:"sy-KOL-oh-jee",sounds_like:'sy-KOL-oh-jee — P is silent',tip:"The P is completely silent at the start.",meaning:"The scientific study of the human mind and its functions.",example:'"She is pursuing a degree in psychology."'},
+  {word:"Receipt",pos:"noun",cat:"general",phonetic:"rih-SEET",sounds_like:'rih-SEET — P is silent',tip:"The P is silent. Never say 'rih-SEE-pt'.",meaning:"A written acknowledgment that something has been received.",example:'"Please keep the receipt for your records."'},
+  {word:"Choir",pos:"noun",cat:"general",phonetic:"KWAI-er",sounds_like:'KWAI-er — CH sounds like KW',tip:"The CH here sounds like KW, not like 'chair'.",meaning:"An organized group of singers.",example:'"She sang in the college choir for three years."'},
+  {word:"Debris",pos:"noun",cat:"general",phonetic:"duh-BREE",sounds_like:'duh-BREE — S is silent',tip:"The final S is silent. French origin.",meaning:"Scattered fragments, typically of something destroyed.",example:'"Workers cleared the debris after the storm."'},
+  {word:"Conscience",pos:"noun",cat:"general",phonetic:"KON-shuns",sounds_like:'KON-shuns — two syllables',tip:"Sounds like 'kon-shuns'. Not 'kon-SHY-ence'.",meaning:"A person's moral sense of right and wrong.",example:'"His conscience would not let him stay silent."'},
+  {word:"Chaos",pos:"noun",cat:"general",phonetic:"KAY-os",sounds_like:'KAY-os — CH sounds like K',tip:"The CH sounds like K. Not 'cha-os' as in 'chair'.",meaning:"Complete disorder and confusion.",example:'"The sudden power cut created chaos in the office."'},
+  {word:"Prejudice",pos:"noun",cat:"general",phonetic:"PREJ-uh-dis",sounds_like:'PREJ-uh-dis — stress on PREJ',tip:"3 syllables: PREJ-uh-dis. Not 'pre-JU-dice'.",meaning:"Preconceived opinion that is not based on reason or experience.",example:'"Hiring decisions must be free from prejudice."'},
+  {word:"Rural",pos:"adjective",cat:"general",phonetic:"ROO-rul",sounds_like:'ROO-rul — two syllables',tip:"Many speakers confuse the two R sounds here. Practice slowly.",meaning:"In, relating to, or characteristic of the countryside.",example:'"The scheme aimed to improve connectivity in rural areas."'},
+  {word:"Pronunciation",pos:"noun",cat:"general",phonetic:"pruh-nun-see-AY-shun",sounds_like:'pruh-nun-see-AY-shun',tip:"Note: it is NOT 'pronounciation'. Drop the O from pronounce.",meaning:"The way in which a word is spoken.",example:'"She worked on her pronunciation before the interview."'},
+
+  // BUSINESS ENGLISH
+  {word:"Entrepreneur",pos:"noun",cat:"business",phonetic:"on-truh-pruh-NUR",sounds_like:'on-truh-pruh-NUR — stress on NUR',tip:"French origin. The EN sounds like ON. Stress the last syllable.",meaning:"A person who starts and runs a business, taking on financial risk.",example:'"The young entrepreneur secured funding for her startup."'},
+  {word:"Leverage",pos:"verb/noun",cat:"business",phonetic:"LEV-er-ij",sounds_like:'LEV-er-ij — 3 syllables',tip:"British English: LEV-er-ij. Not 'LEE-ver-age'.",meaning:"To use something to its maximum advantage.",example:'"We need to leverage our existing network to grow sales."'},
+  {word:"Niche",pos:"noun",cat:"business",phonetic:"NEESH",sounds_like:'Sounds like "neesh"',tip:"In British/Indian English: NEESH. Not 'NITCH'.",meaning:"A specialized segment of the market or a particular area of expertise.",example:'"The company found its niche in eco-friendly packaging."'},
+  {word:"Synergy",pos:"noun",cat:"business",phonetic:"SIN-er-jee",sounds_like:'SIN-er-jee — stress on SIN',tip:"The Y at the start makes a soft I (sin), not 'sigh'.",meaning:"The interaction of two or more things to produce a combined effect greater than the sum of their parts.",example:'"The merger created great synergy between the two teams."'},
+  {word:"Paradigm",pos:"noun",cat:"business",phonetic:"PAR-uh-dyme",sounds_like:'PAR-uh-dyme — GN is silent',tip:"The GN at the end is silent. Rhymes with 'time'.",meaning:"A typical example or pattern; a model or framework.",example:'"The startup introduced a paradigm shift in online retail."'},
+  {word:"Revenue",pos:"noun",cat:"business",phonetic:"REV-en-yoo",sounds_like:'REV-en-yoo — 3 syllables',tip:"Stress on the first syllable: REV. Not 'ruh-VEN-yoo'.",meaning:"Income generated by a business from its normal operations.",example:'"The company reported a 20% increase in annual revenue."'},
+  {word:"Acquisition",pos:"noun",cat:"business",phonetic:"ak-wih-ZI-shun",sounds_like:'ak-wih-ZI-shun — stress on ZI',tip:"4 syllables. Stress falls on the third: ZI.",meaning:"The act of obtaining or buying something, especially a company.",example:'"The acquisition of the startup boosted their product range."'},
+  {word:"Feasibility",pos:"noun",cat:"business",phonetic:"fee-zuh-BIL-ih-tee",sounds_like:'fee-zuh-BIL-ih-tee',tip:"Stress on BIL. Not 'fea-si-BIL-ity' with a hard S.",meaning:"The state of being possible and practical to do.",example:'"We need to conduct a feasibility study before proceeding."'},
+  {word:"Remuneration",pos:"noun",cat:"business",phonetic:"rih-myoo-nuh-RAY-shun",sounds_like:'rih-myoo-nuh-RAY-shun',tip:"Often mispronounced as 'reh-NOO-mer-ation'. There is no N after the R.",meaning:"Money paid for work or a service; compensation.",example:'"The remuneration package includes a performance bonus."'},
+  {word:"Plagiarism",pos:"noun",cat:"business",phonetic:"PLAY-juh-riz-um",sounds_like:'PLAY-juh-riz-um',tip:"The GI sounds like a soft J. Not 'pla-GEE-arism'.",meaning:"The practice of taking someone else's work or ideas and presenting them as your own.",example:'"Submitting copied content is a serious case of plagiarism."'},
+
+  // GD / INTERVIEW WORDS
+  {word:"Unanimous",pos:"adjective",cat:"gd",phonetic:"yoo-NAN-ih-mus",sounds_like:'yoo-NAN-ih-mus — stress on NAN',tip:"The U at the start sounds like YOO, not 'uh'.",meaning:"Fully in agreement; with no dissenting voice.",example:'"The panel reached a unanimous decision to select the candidate."'},
+  {word:"Consensus",pos:"noun",cat:"gd",phonetic:"kun-SEN-sus",sounds_like:'kun-SEN-sus — stress on SEN',tip:"Not 'con-SEN-suss'. The ending is -sus not -sus-sus.",meaning:"General agreement among a group of people.",example:'"The group reached a consensus after a long discussion."'},
+  {word:"Complacent",pos:"adjective",cat:"gd",phonetic:"kum-PLAY-sunt",sounds_like:'kum-PLAY-sunt — stress on PLAY',tip:"Don't confuse with 'complaisant'. These are different words.",meaning:"Showing uncritical satisfaction with oneself or one's achievements.",example:'"A leader cannot afford to be complacent about quality."'},
+  {word:"Perseverance",pos:"noun",cat:"gd",phonetic:"pur-suh-VEER-uns",sounds_like:'pur-suh-VEER-uns — stress on VEER',tip:"4 syllables. Stress on the third: VEER.",meaning:"Continued effort to do or achieve something despite difficulty.",example:'"Her perseverance helped her crack the final interview."'},
+  {word:"Integrity",pos:"noun",cat:"gd",phonetic:"in-TEG-rih-tee",sounds_like:'in-TEG-rih-tee — stress on TEG',tip:"4 syllables. Stress on TEG. Not 'IN-teg-rity'.",meaning:"The quality of being honest and having strong moral principles.",example:'"Integrity is the most important quality we look for in candidates."'},
+  {word:"Empathy",pos:"noun",cat:"gd",phonetic:"EM-puh-thee",sounds_like:'EM-puh-thee — stress on EM',tip:"Not 'em-PA-thy'. Stress is on the first syllable.",meaning:"The ability to understand and share the feelings of another.",example:'"Good leaders demonstrate empathy toward their team members."'},
+  {word:"Sustainable",pos:"adjective",cat:"gd",phonetic:"suh-STAY-nuh-bul",sounds_like:'suh-STAY-nuh-bul — stress on STAY',tip:"4 syllables. Not 'SUS-tain-able' with stress on first syllable.",meaning:"Able to be maintained at a certain rate or level without depleting resources.",example:'"The company adopted sustainable practices to reduce waste."'},
+  {word:"Accountability",pos:"noun",cat:"gd",phonetic:"uh-kown-tuh-BIL-ih-tee",sounds_like:'uh-kown-tuh-BIL-ih-tee',tip:"Stress on BIL. A very common word in GD topics.",meaning:"The fact or condition of being responsible for one's actions.",example:'"Accountability is key to building trust in any organization."'},
+  {word:"Demographic",pos:"noun",cat:"gd",phonetic:"dem-uh-GRAF-ik",sounds_like:'dem-uh-GRAF-ik — stress on GRAF',tip:"4 syllables. Not 'de-mo-GRAPH-ic' with a hard PH.",meaning:"A particular sector of a population, defined by age, gender, income, etc.",example:'"This product targets the 18–25 demographic."'},
+  {word:"Volatility",pos:"noun",cat:"gd",phonetic:"vol-uh-TIL-ih-tee",sounds_like:'vol-uh-TIL-ih-tee — stress on TIL',tip:"5 syllables. Stress on TIL. Common in economy and market GD topics.",meaning:"A tendency to change rapidly and unpredictably, especially for the worse.",example:'"The volatility of global markets is a concern for investors."'},
+];
+
+let deck=[...words],idx=0,listening=false,recog=null;
+let score={correct:0,partial:0,wrong:0,attempts:0};
+let currentFilter='all';
+
+const SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SpeechRec){
+  document.getElementById('no-support-msg').style.display='block';
+  document.getElementById('micBtn').classList.add('disabled');
+}
+
+function setFilter(cat,btn){
+  currentFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  deck=cat==='all'?[...words]:words.filter(w=>w.cat===cat);
+  idx=0;render();
+}
+
+function doShuffle(){deck.sort(()=>Math.random()-.5);idx=0;render();}
+function goTo(n){idx=Math.max(0,Math.min(deck.length-1,n));render();}
+
+function render(){
+  const w=deck[idx];
+  document.getElementById('cur').textContent=idx+1;
+  document.getElementById('total').textContent=deck.length;
+  document.getElementById('prog-fill').style.width=((idx+1)/deck.length*100)+'%';
+
+  const tagEl=document.getElementById('cat-tag');
+  tagEl.textContent=w.pos;
+  tagEl.className='cat-tag cat-'+w.cat;
+
+  document.getElementById('cat-label').textContent=
+    w.cat==='general'?'Common Words':w.cat==='business'?'Business English':'GD / Interview';
+
+  document.getElementById('word-main').textContent=w.word;
+  document.getElementById('phonetic').textContent=w.phonetic;
+  document.getElementById('sounds-like').textContent=w.sounds_like;
+  document.getElementById('tip').textContent=w.tip?'💡 '+w.tip:'';
+  document.getElementById('meaning').textContent=w.meaning;
+  document.getElementById('example').textContent=w.example;
+
+  document.getElementById('prevBtn').disabled=idx===0;
+  document.getElementById('nextBtn').disabled=idx===deck.length-1;
+  clearFeedback();
+}
+
+function clearFeedback(){
+  const fb=document.getElementById('feedback');
+  fb.className='feedback-box';
+  document.getElementById('heard-line').style.display='none';
+  if(listening)stopMic();
+}
+
+function showFeedback(type,msg){
+  const fb=document.getElementById('feedback');
+  fb.className='feedback-box show '+type;
+  const icons={correct:'✓',wrong:'✗',partial:'~'};
+  document.getElementById('fb-icon').textContent=icons[type];
+  document.getElementById('fb-msg').textContent=msg;
+}
+
+function resetScore(){
+  score={correct:0,partial:0,wrong:0,attempts:0};
+  updateScoreBar();
+}
+
+function updateScoreBar(){
+  document.getElementById('sc-correct').textContent=score.correct;
+  document.getElementById('sc-partial').textContent=score.partial;
+  document.getElementById('sc-wrong').textContent=score.wrong;
+  const pct=score.attempts>0?Math.round((score.correct/score.attempts)*100)+'%':'—';
+  document.getElementById('sc-pct').textContent=pct;
+}
+
+function toggleMic(){
+  if(!SpeechRec)return;
+  listening?stopMic():startMic();
+}
+
+function startMic(){
+  clearFeedback();
+  recog=new SpeechRec();
+  recog.lang='en-IN';
+  recog.interimResults=false;
+  recog.maxAlternatives=6;
+  recog.onstart=()=>{
+    listening=true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micLabel').textContent='सुन रहा हूँ… शब्द बोलें  |  Listening… say the word now';
+  };
+  recog.onresult=(e)=>{
+    const target=deck[idx].word.toLowerCase().trim();
+    let bestScore=0;
+    for(let i=0;i<e.results[0].length;i++){
+      const t=e.results[0][i].transcript.toLowerCase().trim();
+      const parts=t.split(/\s+/);
+      for(const p of parts){const s=similarity(p,target);if(s>bestScore)bestScore=s;}
+    }
+    const heard=e.results[0][0].transcript;
+    document.getElementById('heard-line').style.display='block';
+    document.getElementById('heard-word').textContent=heard;
+    score.attempts++;
+    if(bestScore>=0.88){score.correct++;showFeedback('correct','शाबाश! Excellent! Your pronunciation is correct ✓');}
+    else if(bestScore>=0.62){score.partial++;showFeedback('partial','लगभग सही! Almost correct — focus on the stressed syllable and try again.');}
+    else{score.wrong++;showFeedback('wrong','गलत उच्चारण। Not quite — study the phonetic guide above and try again.');}
+    updateScoreBar();
+    resetMicUI();
+  };
+  recog.onerror=(e)=>{
+    if(e.error!=='no-speech')showFeedback('wrong','माइक नहीं सुना। Could not hear you — check your mic and try again.');
+    resetMicUI();
+  };
+  recog.onend=resetMicUI;
+  recog.start();
+}
+
+function stopMic(){if(recog)recog.stop();resetMicUI();}
+function resetMicUI(){
+  listening=false;
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('micLabel').textContent='माइक दबाएं और शब्द बोलें  |  Tap mic and say the word';
+}
+
+function similarity(a,b){
+  a=a.toLowerCase();b=b.toLowerCase();
+  if(a===b)return 1;
+  if(b.includes(a)||a.includes(b))return .87;
+  const la=a.length,lb=b.length;
+  const dp=Array.from({length:la+1},(_,i)=>Array.from({length:lb+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=la;i++)for(let j=1;j<=lb;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return 1-dp[la][lb]/Math.max(la,lb);
+}
+
+function toggleModal(){
+  const m=document.getElementById('modal');
+  m.classList.toggle('show');
+}
+
+render();
+</script>
+</body>
+</html>
