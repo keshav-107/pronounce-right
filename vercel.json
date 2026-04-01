@@ -1,5 +1,5 @@
 {
   "routes": [
-    { "src": "/", "dest": "/app.html" }
+    { "src": "/", "dest": "/PronounceRight.html" }
   ]
 }
